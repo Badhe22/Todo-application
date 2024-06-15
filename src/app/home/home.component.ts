@@ -14,10 +14,12 @@ import { Router } from '@angular/router';
       padding: 10px;
       font-size: 20px;
       
+      
     }
     h1{
     color:blue;
     font-size:45px;
+    
     }
   `]
 })

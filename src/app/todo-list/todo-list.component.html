@@ -1,7 +1,17 @@
-<!-- <h2>Todo List</h2>
-    <ul>
-      <li *ngFor="let todo of todos">
+<div class="todo-list">
+  <h2>Todo List</h2>
+  <div class="input-group">
+    <input [(ngModel)]="newTodoTitle" type="text" class="todo-input" placeholder="Enter Todo">
+    <button class="btn btn-add" (click)="addOrEditTodo()">{{ editedTodo ? 'Save' : 'Add' }}</button>
+  </div>
+  
+  <ul class="todo-items">
+    <li *ngFor="let todo of todos" class="todo-item">
+      <div class="todo-content">
         {{ todo.title }}
-        <button (click)="deleteTodo.emit(todo.id)">Delete</button>
-      </li>
-    </ul> -->
+        <button class="btn btn-delete" (click)="deleteTodo(todo.id)">Delete</button>
+        <button class="btn btn-edit" (click)="editTodo(todo)">Edit</button>
+      </div>
+    </li>
+  </ul>
+</div>

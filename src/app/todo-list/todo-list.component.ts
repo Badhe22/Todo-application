@@ -1,143 +1,60 @@
-// import { Component, Input, Output, EventEmitter } from '@angular/core';
-// import { FormsModule} from '@angular/forms';
-// import { CommonModule } from '@angular/common';
 
-
-// @Component({
-//   selector: 'app-todo-list',
-//   standalone: true,
-//   imports: [FormsModule,CommonModule],
-//   template: `
-//     // <h2>Todo List</h2>
-//     // <input [(ngModel)]="newTodoTitle" type="text" placeholder="Enter Todo List">
-//     // <button (click)="addTodo()">Add Todo</button>
-    
-//     // <ul>
-//     //   <li *ngFor="let todo of todos">
-//     //     {{ todo.title }}
-//     //     <button (click)="deleteTodo(todo.id)">Delete</button>
-//     //      <button (click)="editTodo()">Edit</button>
-//     //   </li>
-      
-//     // </ul>
-//   `,
-//   styles: [`
-//     ul {
-//       list-style-type: none;
-//       padding: 0;
-//     }
-//     li {
-//       margin-bottom: 10px;
-//     }
-//     button {
-//       margin-left: 10px;
-//       background-color:yellow;
-      
-//     }
-//   `]
-// })
-
-// export class TodoListComponent {
-//   @Input() todos: { id: number, title: string, completed: boolean }[] = [];
-//   @Output() delete = new EventEmitter<number>();
-
-//   newTodoTitle = '';
-
-//   deleteTodo(id: number): void {
-//     this.todos = this.todos.filter(todo => todo.id !== id);
-//   }
-
-//   addTodo(): void {
-//     const newTodo = {
-//       id: this.todos.length + 1,
-//       title: this.newTodoTitle,
-//       completed: false
-//     };
-//     this.todos.push(newTodo);
-//     this.newTodoTitle = '';
-//   }
-// }
-
-
-
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter ,OnInit} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Todo } from '../todo.model'; // Adjust the path based on your project structure
+import { Router } from '@angular/router';
+import { Todo } from '../todo.model'; 
+import { IdService } from '../id.service';
 
 @Component({
+  standalone:true,
   selector: 'app-todo-list',
-  standalone: true,
-  imports: [FormsModule, CommonModule],
-  template: `
-    <h2>Todo List</h2>
-    <input [(ngModel)]="newTodoTitle" type="text" placeholder="Enter Todo List">
-    <button (click)="addTodo()">Add Todo</button>
-    
-    <ul>
-      <li *ngFor="let todo of todos">
-        {{ todo.title }}
-        <button (click)="deleteTodo(todo.id)">Delete</button>
-        <button (click)="editTodo(todo)">Edit</button>
-        <div *ngIf="todo.isEditing">
-          <input [(ngModel)]="editedTodoTitle" type="text">
-          <button (click)="saveEdit(todo)">Save</button>
-          <button (click)="cancelEdit(todo)">Cancel</button>
-        </div>
-      </li>
-    </ul>
-  `,
-  styles: [`
-    ul {
-      list-style-type: none;
-      padding: 0;
-    }
-    li {
-      margin-bottom: 10px;
-    }
-    button {
-      margin-left: 10px;
-      background-color: yellow;
-    }
-  `]
+  templateUrl: './todo-list.component.html',
+  styleUrls: ['./todo-list.component.css'],
+  imports: [FormsModule, CommonModule] 
 })
+
 export class TodoListComponent {
   @Input() todos: Todo[] = [];
-  @Output() delete = new EventEmitter<number>();
-
   newTodoTitle = '';
-  editedTodoTitle = '';
+  editedTodo: Todo | null = null;
 
-  deleteTodo(id: number): void {
-        this.todos = this.todos.filter(todo => todo.id !== id);
+  constructor(private router: Router, private idService: IdService) {}
+
+  addOrEditTodo(): void {
+    if (this.editedTodo) {
+      
+      const index = this.todos.findIndex(todo => todo.id === this.editedTodo!.id);
+      if (index !== -1) {
+        this.todos[index].title = this.newTodoTitle;
+        this.editedTodo = null; 
+        this.newTodoTitle = ''; 
       }
+    } else {
+     
+      if (this.newTodoTitle.trim()) {
+        const newTodo: Todo = {
+          id: this.idService.getNextId(),
+          title: this.newTodoTitle,
+          completed: false
+        };
+        this.todos.push(newTodo);
+        this.newTodoTitle = ''; 
 
-
- 
-
-  addTodo(): void {
-    const newTodo: Todo = {
-      id: this.todos.length + 1,
-      title: this.newTodoTitle,
-      completed: false
-    };
-    this.todos.push(newTodo);
-    this.newTodoTitle = '';
+        
+        // this.router.navigate(['home/todo-list/add', newTodo.id]);
+      }
+    }
   }
 
   editTodo(todo: Todo): void {
-    todo.isEditing = true;
-    this.editedTodoTitle = todo.title; 
+    this.editedTodo = todo;
+    this.newTodoTitle = todo.title; 
+    
+    this.router.navigate(['home/todo-list/edit', todo.id]);
   }
 
-  saveEdit(todo: Todo): void {
-    todo.title = this.editedTodoTitle;
-    todo.isEditing = false;
-    this.editedTodoTitle = '';
-  }
-
-  cancelEdit(todo: Todo): void {
-    todo.isEditing = false;
-    this.editedTodoTitle = ''; 
+  deleteTodo(id: number): void {
+    this.todos = this.todos.filter(todo => todo.id !== id);
   }
 }
